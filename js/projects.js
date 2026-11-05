@@ -9,6 +9,7 @@ window.SITE = {
   intro: "Reels, travel films and brand edits with tight pacing and honest colour. Available for remote work.",
   bio: "Hi, I'm Mayank Mehra, a self-taught editor. No courses, no certificates, no diploma on the wall. I learned by cutting things, breaking them, undoing them (Ctrl+Z is my best friend) and cutting them again until they worked. My teachers were YouTube rabbit holes and a lot of 2 a.m. exports. The only certificate I've got is a pile of finished edits, and honestly, that's the one clients actually watch.",
   email: "mmehraa13@gmail.com",
+  formKey: "662536eb-dacf-448e-b016-9cb19bedd71e",   // Web3Forms public access key: the form sends messages straight to your inbox
   instagram: "",                           // full link, or leave "" to hide the button
   linkedin: "",
   youtube: "",

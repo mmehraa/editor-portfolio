@@ -234,7 +234,7 @@
       <div class="sv"><b class="n">02</b><div><strong>Works everywhere</strong>Phones, tablets and laptops. Windows included.</div></div>
       <div class="sv"><b class="n">03</b><div><strong>Easy to update</strong>Add your own work by editing one simple file.</div></div>
       <p class="dim" style="margin-top:10px">Fine print: may cause clients to hire you. Side effects include compliments and an urge to Ctrl+Z your old website.</p>
-      <div class="row"><a class="btn red" href="mailto:${esc(S.email || '')}?subject=${subj}&body=${body}">I want a site like this</a><button class="btn alt" data-open="hire">Open hire me</button></div>`;
+      <div class="row"><button class="btn red" data-open="hire" data-order="Portfolio websites">I want a site like this</button><button class="btn alt" data-open="hire">Open hire me</button></div>`;
   }
 
   function processBody() {
@@ -242,7 +242,7 @@
     return `<p class="dim">Tick off each step to see how a project goes.</p>` +
       list.map((s, i) => `<button class="stp" data-step="${i}" aria-pressed="false"><b class="n">${i + 1}</b><span><strong>${esc(s.title)}</strong>${esc(s.text)}${s.joke ? `<em class="jk">${esc(s.joke)}</em>` : ''}</span><i class="ck" aria-hidden="true"></i></button>`).join('') +
       `<p class="stm" id="stm" role="status"></p>
-      <div class="happy" id="happy" hidden><a class="btn red" href="mailto:${esc(S.email || '')}?subject=${encodeURIComponent('Our project had a happy ending')}&body=${encodeURIComponent('Hi Mayank, I just went through your process on the portfolio and I want to start a project.\n\nHere is what I need:\n')}">Slide into my inbox</a><p class="dim" style="margin:8px 0 0">Unlike my exes, I actually reply. Usually within minutes.</p></div>`;
+      <div class="happy" id="happy" hidden><button class="btn red" data-open="hire">Slide into my inbox</button><p class="dim" style="margin:8px 0 0">Unlike my exes, I actually reply. Usually within minutes.</p></div>`;
   }
   function stepClick(b) {
     const on = b.getAttribute('aria-pressed') !== 'true';
@@ -277,8 +277,10 @@
       <div class="badges"><span>Reply: fast</span><span>Timezone: flexible</span><span>Drama: none</span><span>Exes: edited out</span></div>
       <form class="f" id="mailForm" novalidate>
         <label>What do you need? (pick any)</label><div class="chipsb">${svcChips}</div>
+        <label for="mn">Your name</label><input id="mn" type="text" autocomplete="name" placeholder="Your name">
         <label for="mf">Your email</label><input id="mf" type="email" autocomplete="email" placeholder="name@company.com">
         <label for="mm">About the project</label><textarea id="mm" data-auto="1" placeholder="What are we cutting, and when do you need it?"></textarea>
+        <input type="checkbox" id="bc" name="botcheck" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true">
         <p class="er" id="mer" role="alert"></p>
         <button class="btn red" type="submit">Send message</button>
       </form>
@@ -298,11 +300,44 @@
       e.preventDefault();
       if (!/^\S+@\S+\.\S+$/.test(mf.value.trim())) { er.className = 'er'; er.textContent = 'Enter a valid email so I can reply.'; mf.focus(); return; }
       if (!mm.value.trim()) { er.className = 'er'; er.textContent = 'Tell me a little about the project.'; mm.focus(); return; }
-      const subject = encodeURIComponent('Editing project from the portfolio');
-      const body = encodeURIComponent(`${mm.value.trim()}\n\nReply to: ${mf.value.trim()}`);
-      er.className = 'er ok';
-      er.textContent = 'Opening your email app… I read every message. Unlike my exes, I reply.';
-      location.href = `mailto:${S.email}?subject=${subject}&body=${body}`;
+      if (form.querySelector('#bc').checked) return;
+      if (!S.formKey) {
+        const subject = encodeURIComponent('Editing project from the portfolio');
+        const body = encodeURIComponent(`${mm.value.trim()}\n\nReply to: ${mf.value.trim()}`);
+        location.href = `mailto:${S.email}?subject=${subject}&body=${body}`;
+        return;
+      }
+      const btn = form.querySelector('button[type=submit]');
+      const payload = {
+        access_key: S.formKey,
+        subject: 'New project enquiry from your portfolio',
+        from_name: 'Portfolio website',
+        name: form.querySelector('#mn').value.trim() || mf.value.trim(),
+        email: mf.value.trim(),
+        message: mm.value.trim()
+      };
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+      er.className = 'er';
+      er.textContent = '';
+      fetch('https://api.web3forms.com/submit', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(payload) })
+        .then((r) => r.json())
+        .then((j) => {
+          if (!j.success) throw new Error(j.message || 'failed');
+          er.className = 'er ok';
+          er.textContent = 'Sent! I read every message. Unlike my exes, I reply.';
+          mm.dataset.auto = '1';
+          order.clear();
+          syncOrder();
+          btn.textContent = 'Sent ✓';
+          setTimeout(() => { btn.disabled = false; btn.textContent = 'Send message'; }, 2500);
+        })
+        .catch(() => {
+          er.className = 'er';
+          er.textContent = `That did not send. Please email me directly at ${S.email}.`;
+          btn.disabled = false;
+          btn.textContent = 'Send message';
+        });
     };
     const c = el.querySelector('#copy');
     if (c) c.onclick = () => {
@@ -391,7 +426,7 @@
     const st = e.target.closest('[data-step]');
     if (st) { stepClick(st); return; }
     const o = e.target.closest('[data-open]');
-    if (o) { open(o.dataset.open); return; }
+    if (o) { if (o.dataset.order) order.add(o.dataset.order); open(o.dataset.open); syncOrder(); return; }
     const c = e.target.closest('[data-clip]');
     if (c) { const [k, i] = c.dataset.clip.split(':'); openPlayer(k, +i); return; }
     if (!e.target.closest('#menu')) { menu.hidden = true; $('start').setAttribute('aria-expanded', 'false'); }
