@@ -474,9 +474,8 @@
     try { sessionStorage.setItem('booted', '1'); } catch (e) {}
     boot.classList.add('out');
     setTimeout(() => (boot.hidden = true), 450);
-    open('welcome');
   };
-  if (seen) { boot.hidden = true; entered = true; open('welcome'); }
+  if (seen) { boot.hidden = true; entered = true; }
   else {
     let n = 0;
     const t = setInterval(() => {
