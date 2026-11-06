@@ -71,5 +71,6 @@ window.REELS = [
      place / year: small text shown on the clip */
 window.TRIPS = [
   { title: "Panchachuli · Darma Valley", client: "", place: "", year: "", meta: "", video: "", youtube: "mPVCpcnvxUY", thumb: "", hue: 210 },
-  { title: "", client: "", place: "", year: "", meta: "", video: "", youtube: "deCsU_mcKnI", thumb: "", hue: 30 }
+  { title: "", client: "", place: "", year: "", meta: "", video: "", youtube: "deCsU_mcKnI", thumb: "", hue: 30 },
+  { title: "", client: "", place: "", year: "", meta: "", video: "", youtube: "uHL0m-9U6Qs", thumb: "", hue: 165 }
 ];
